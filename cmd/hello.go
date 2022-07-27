@@ -26,6 +26,7 @@ var helloCmd = &cobra.Command{
 		if len(args) > 0 {
 			msg = "Hello, " + strings.Join(args, " and ") + "!"
 		}
+		msg = cfg.UserName + ": " + msg
 		if rFlag {
 			msg = reverseString(msg)
 		}

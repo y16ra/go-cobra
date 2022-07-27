@@ -5,10 +5,21 @@ Copyright © 2022 y16ra
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var (
+	cfgFile string
+	cfg     Config
+)
+
+type Config struct {
+	UserName string `mapstructure:"user_name"`
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -38,6 +49,7 @@ func Execute() {
 }
 
 func init() {
+	cobra.OnInitialize(initConfig)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -47,4 +59,24 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "config", "Specify config file name. Looking up configs directory by this file name.")
+}
+
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigName(cfgFile)
+	} else {
+		viper.SetConfigName("config")
+	}
+	viper.AddConfigPath("configs/")
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("invalid config file: %s \n", err)
+		os.Exit(1)
+	}
+	if err := viper.Unmarshal(&cfg); err != nil {
+		fmt.Printf("unmarshal failed : %s \n", err)
+		os.Exit(1)
+	}
 }
